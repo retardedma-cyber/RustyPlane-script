@@ -77,6 +77,23 @@ minimizeBtn.TextSize=24
 minimizeBtn.TextColor3=Color3.fromRGB(255,220,180)
 Instance.new("UICorner",minimizeBtn).CornerRadius=UDim.new(0,8)
 
+-- Обработчики кнопок
+local panelVisible = true
+closeBtn.MouseButton1Click:Connect(function()
+	gui:Destroy()
+end)
+
+minimizeBtn.MouseButton1Click:Connect(function()
+	panelVisible = not panelVisible
+	if panelVisible then
+		tween(panel, 0.3, {Position = UDim2.new(1, -420, 0, 0)})
+		minimizeBtn.Text = "–"
+	else
+		tween(panel, 0.3, {Position = UDim2.new(1, 0, 0, 0)})
+		minimizeBtn.Text = "+"
+	end
+end)
+
 ------------------------------------------------------
 -- tabs
 ------------------------------------------------------
@@ -282,7 +299,7 @@ flyBtn.MouseButton1Click:Connect(function()
 end)
 
 RunService.RenderStepped:Connect(function()
-	if fly and char:FindFirstChild("HumanoidRootPart")then
+	if fly and char:FindFirstChild("HumanoidRootPart") and bv and bg then
 		local root=char.HumanoidRootPart
 		local cam=workspace.CurrentCamera
 		local dir=Vector3.new()
@@ -290,6 +307,8 @@ RunService.RenderStepped:Connect(function()
 		if UIS:IsKeyDown(Enum.KeyCode.S) then dir-=cam.CFrame.LookVector end
 		if UIS:IsKeyDown(Enum.KeyCode.A) then dir-=cam.CFrame.RightVector end
 		if UIS:IsKeyDown(Enum.KeyCode.D) then dir+=cam.CFrame.RightVector end
+		if UIS:IsKeyDown(Enum.KeyCode.Space) then dir+=Vector3.new(0,1,0) end
+		if UIS:IsKeyDown(Enum.KeyCode.LeftShift) then dir-=Vector3.new(0,1,0) end
 		bv.Velocity=dir*speed
 		bg.CFrame=cam.CFrame
 	end
@@ -343,7 +362,7 @@ tpBtn.MouseButton1Click:Connect(function()
 end)
 makeSlider(playerFrame,300,"TP-Walk Speed",1,30,tpSpeed,function(v)tpSpeed=v end)
 
-RunService.RenderStepped:Connect(function()
+RunService.RenderStepped:Connect(function(deltaTime)
 	if tpWalk and char:FindFirstChild("HumanoidRootPart")then
 		local hrp=char.HumanoidRootPart
 		local move=Vector3.new()
@@ -352,7 +371,7 @@ RunService.RenderStepped:Connect(function()
 		if UIS:IsKeyDown(Enum.KeyCode.A) then move-=workspace.CurrentCamera.CFrame.RightVector end
 		if UIS:IsKeyDown(Enum.KeyCode.D) then move+=workspace.CurrentCamera.CFrame.RightVector end
 		if move.Magnitude>0 then
-			hrp.CFrame+=move.Unit*tpSpeed*RunService.RenderStepped:Wait()
+			hrp.CFrame = hrp.CFrame + (move.Unit * tpSpeed * deltaTime)
 		end
 	end
 end)
@@ -372,7 +391,12 @@ Instance.new("UICorner", grantBtn).CornerRadius = UDim.new(0, 8)
 
 grantBtn.MouseButton1Click:Connect(function()
 	local success, err = pcall(function()
-		local ui = plr.PlayerGui:FindFirstChild("AdminPanelUI") or workspace:FindFirstChild("AdminPanelUI")
+		-- Ищем в StarterGui, PlayerGui и Workspace
+		local StarterGui = game:GetService("StarterGui")
+		local ui = plr.PlayerGui:FindFirstChild("AdminPanelUI")
+			or StarterGui:FindFirstChild("AdminPanelUI")
+			or workspace:FindFirstChild("AdminPanelUI")
+
 		if not ui then
 			grantBtn.Text = "⚠ No AdminPanelUI found"
 			task.wait(1.5)
