@@ -40,11 +40,16 @@ plr.CameraMaxZoomDistance = 99999
 plr.CameraMode = Enum.CameraMode.Classic
 
 -- Уведомление о разблокировке
-game.StarterGui:SetCore("SendNotification", {
-	Title = "Camera Unlocked";
-	Text = "Third-person view is now available";
-	Duration = 3;
-})
+task.spawn(function()
+	task.wait(0.5)
+	pcall(function()
+		game.StarterGui:SetCore("SendNotification", {
+			Title = "Camera Unlocked";
+			Text = "Third-person view is now available";
+			Duration = 3;
+		})
+	end)
+end)
 
 local panel=Instance.new("Frame",gui)
 panel.Size=UDim2.new(0,440,1,0)
