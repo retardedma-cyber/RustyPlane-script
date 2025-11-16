@@ -1,5 +1,4 @@
 -- ✈️ Rusty Plane v10 — by RENC
--- full modern menu: Tools / Player / Op
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
@@ -33,74 +32,189 @@ gui.IgnoreGuiInset=true
 gui.ResetOnSpawn=false
 gui.Parent=game.CoreGui
 
+------------------------------------------------------
+-- Разблокировка камеры для работы с меню
+------------------------------------------------------
+plr.CameraMaxZoomDistance = 99999
+plr.CameraMode = Enum.CameraMode.Classic
+
+-- Уведомление о разблокировке
+game.StarterGui:SetCore("SendNotification", {
+	Title = "Camera Unlocked";
+	Text = "Third-person view is now available";
+	Duration = 3;
+})
+
 local panel=Instance.new("Frame",gui)
-panel.Size=UDim2.new(0,420,1,0)
-panel.Position = UDim2.new(1,-420,0,0)
-panel.BackgroundColor3=Color3.fromRGB(22,22,22)
+panel.Size=UDim2.new(0,440,1,0)
+panel.Position = UDim2.new(1,-440,0,0)
+panel.BackgroundColor3=Color3.fromRGB(18,18,20)
 panel.BorderSizePixel=0
-Instance.new("UICorner",panel).CornerRadius=UDim.new(0,14)
+panel.BackgroundTransparency=0.05
+Instance.new("UICorner",panel).CornerRadius=UDim.new(0,16)
+
+-- Тень для панели
+local shadow=Instance.new("ImageLabel",panel)
+shadow.Size=UDim2.new(1,30,1,30)
+shadow.Position=UDim2.new(0,-15,0,-15)
+shadow.BackgroundTransparency=1
+shadow.Image="rbxasset://textures/ui/GuiImagePlaceholder.png"
+shadow.ImageColor3=Color3.fromRGB(0,0,0)
+shadow.ImageTransparency=0.5
+shadow.ZIndex=0
+
 local grad=Instance.new("UIGradient",panel)
 grad.Color=ColorSequence.new{
-	ColorSequenceKeypoint.new(0,Color3.fromRGB(60,45,30)),
-	ColorSequenceKeypoint.new(1,Color3.fromRGB(25,25,25))
+	ColorSequenceKeypoint.new(0,Color3.fromRGB(70,50,35)),
+	ColorSequenceKeypoint.new(0.5,Color3.fromRGB(28,28,32)),
+	ColorSequenceKeypoint.new(1,Color3.fromRGB(20,20,22))
 }
+grad.Rotation=90
+
+-- Акцентная линия слева
+local accent=Instance.new("Frame",panel)
+accent.Size=UDim2.new(0,4,1,0)
+accent.Position=UDim2.new(0,0,0,0)
+accent.BorderSizePixel=0
+local accentGrad=Instance.new("UIGradient",accent)
+accentGrad.Color=ColorSequence.new{
+	ColorSequenceKeypoint.new(0,Color3.fromRGB(255,180,100)),
+	ColorSequenceKeypoint.new(0.5,Color3.fromRGB(200,120,60)),
+	ColorSequenceKeypoint.new(1,Color3.fromRGB(255,180,100))
+}
+accentGrad.Rotation=90
 
 ------------------------------------------------------
 -- header
 ------------------------------------------------------
 local header=Instance.new("TextLabel",panel)
-header.Size=UDim2.new(1,-120,0,60)
-header.Position=UDim2.new(0,20,0,5)
+header.Size=UDim2.new(1,-120,0,50)
+header.Position=UDim2.new(0,25,0,8)
 header.BackgroundTransparency=1
 header.Font=Enum.Font.GothamBold
-header.TextSize=30
-header.TextColor3=Color3.fromRGB(255,200,120)
+header.TextSize=32
+header.TextColor3=Color3.fromRGB(255,210,140)
 header.Text="✈ RUSTY PLANE ✈"
+header.TextStrokeTransparency=0.8
+header.TextStrokeColor3=Color3.fromRGB(0,0,0)
+
+local subtitle=Instance.new("TextLabel",panel)
+subtitle.Size=UDim2.new(1,-120,0,20)
+subtitle.Position=UDim2.new(0,25,0,52)
+subtitle.BackgroundTransparency=1
+subtitle.Font=Enum.Font.GothamMedium
+subtitle.TextSize=14
+subtitle.TextColor3=Color3.fromRGB(200,160,100)
+subtitle.Text="By RENC"
+subtitle.TextTransparency=0.3
 
 local closeBtn=Instance.new("TextButton",panel)
-closeBtn.Size=UDim2.new(0,40,0,40)
-closeBtn.Position=UDim2.new(1,-50,0,10)
-closeBtn.BackgroundColor3=Color3.fromRGB(70,25,25)
+closeBtn.Size=UDim2.new(0,42,0,42)
+closeBtn.Position=UDim2.new(1,-52,0,15)
+closeBtn.BackgroundColor3=Color3.fromRGB(85,30,30)
 closeBtn.Font=Enum.Font.GothamBold
 closeBtn.Text="×"
-closeBtn.TextSize=24
-closeBtn.TextColor3=Color3.fromRGB(255,200,180)
-Instance.new("UICorner",closeBtn).CornerRadius=UDim.new(0,8)
+closeBtn.TextSize=26
+closeBtn.TextColor3=Color3.fromRGB(255,220,200)
+closeBtn.AutoButtonColor=false
+Instance.new("UICorner",closeBtn).CornerRadius=UDim.new(0,10)
+local closeBtnStroke=Instance.new("UIStroke",closeBtn)
+closeBtnStroke.Color=Color3.fromRGB(120,40,40)
+closeBtnStroke.Thickness=1.5
+closeBtnStroke.Transparency=0.5
 
 local minimizeBtn=Instance.new("TextButton",panel)
-minimizeBtn.Size=UDim2.new(0,40,0,40)
-minimizeBtn.Position=UDim2.new(1,-100,0,10)
-minimizeBtn.BackgroundColor3=Color3.fromRGB(45,45,45)
+minimizeBtn.Size=UDim2.new(0,42,0,42)
+minimizeBtn.Position=UDim2.new(1,-105,0,15)
+minimizeBtn.BackgroundColor3=Color3.fromRGB(50,50,55)
 minimizeBtn.Font=Enum.Font.GothamBold
 minimizeBtn.Text="–"
-minimizeBtn.TextSize=24
-minimizeBtn.TextColor3=Color3.fromRGB(255,220,180)
-Instance.new("UICorner",minimizeBtn).CornerRadius=UDim.new(0,8)
+minimizeBtn.TextSize=26
+minimizeBtn.TextColor3=Color3.fromRGB(255,230,200)
+minimizeBtn.AutoButtonColor=false
+Instance.new("UICorner",minimizeBtn).CornerRadius=UDim.new(0,10)
+local minBtnStroke=Instance.new("UIStroke",minimizeBtn)
+minBtnStroke.Color=Color3.fromRGB(80,80,90)
+minBtnStroke.Thickness=1.5
+minBtnStroke.Transparency=0.5
+
+-- Hover эффекты для кнопок
+closeBtn.MouseEnter:Connect(function()
+	tween(closeBtn,0.2,{BackgroundColor3=Color3.fromRGB(120,40,40)})
+end)
+closeBtn.MouseLeave:Connect(function()
+	tween(closeBtn,0.2,{BackgroundColor3=Color3.fromRGB(85,30,30)})
+end)
+
+minimizeBtn.MouseEnter:Connect(function()
+	tween(minimizeBtn,0.2,{BackgroundColor3=Color3.fromRGB(70,70,75)})
+end)
+minimizeBtn.MouseLeave:Connect(function()
+	tween(minimizeBtn,0.2,{BackgroundColor3=Color3.fromRGB(50,50,55)})
+end)
+
+-- Обработчики кнопок
+local panelVisible = true
+closeBtn.MouseButton1Click:Connect(function()
+	tween(panel, 0.3, {Position = UDim2.new(1, 50, 0, 0)})
+	task.wait(0.3)
+	gui:Destroy()
+end)
+
+minimizeBtn.MouseButton1Click:Connect(function()
+	panelVisible = not panelVisible
+	if panelVisible then
+		tween(panel, 0.4, {Position = UDim2.new(1, -440, 0, 0)})
+		minimizeBtn.Text = "–"
+	else
+		tween(panel, 0.4, {Position = UDim2.new(1, 0, 0, 0)})
+		minimizeBtn.Text = "+"
+	end
+end)
 
 ------------------------------------------------------
 -- tabs
 ------------------------------------------------------
 local tabHolder=Instance.new("Frame",panel)
-tabHolder.Size=UDim2.new(1,-20,0,50)
-tabHolder.Position=UDim2.new(0,10,0,70)
+tabHolder.Size=UDim2.new(1,-30,0,55)
+tabHolder.Position=UDim2.new(0,15,0,85)
 tabHolder.BackgroundTransparency=1
 
 local content=Instance.new("Frame",panel)
-content.Size=UDim2.new(1,-20,1,-160)
-content.Position=UDim2.new(0,10,0,130)
+content.Size=UDim2.new(1,-30,1,-180)
+content.Position=UDim2.new(0,15,0,150)
 content.BackgroundTransparency=1
 
 local function makeTab(name,pos)
 	local b=Instance.new("TextButton",tabHolder)
-	b.Size=UDim2.new(0.33,-10,1,-10)
-	b.Position=UDim2.new(pos,10,0,5)
-	b.BackgroundColor3=(pos==0) and Color3.fromRGB(80,50,30) or Color3.fromRGB(40,40,40)
-	b.TextColor3=Color3.fromRGB(255,220,160)
+	b.Size=UDim2.new(0.33,-8,1,-8)
+	b.Position=UDim2.new(pos,6,0,4)
+	b.BackgroundColor3=(pos==0) and Color3.fromRGB(90,60,35) or Color3.fromRGB(45,45,50)
+	b.TextColor3=Color3.fromRGB(255,230,180)
 	b.Font=Enum.Font.GothamBold
-	b.TextSize=20
+	b.TextSize=21
 	b.Text=name
 	b.AutoButtonColor=false
-	Instance.new("UICorner",b).CornerRadius=UDim.new(0,8)
+	Instance.new("UICorner",b).CornerRadius=UDim.new(0,10)
+
+	-- Обводка для вкладок
+	local stroke=Instance.new("UIStroke",b)
+	stroke.Color=Color3.fromRGB(100,70,50)
+	stroke.Thickness=1
+	stroke.Transparency=0.6
+
+	-- Hover эффект
+	b.MouseEnter:Connect(function()
+		if b.BackgroundColor3~=Color3.fromRGB(90,60,35) then
+			tween(b,0.2,{BackgroundColor3=Color3.fromRGB(55,55,60)})
+		end
+	end)
+	b.MouseLeave:Connect(function()
+		if b.BackgroundColor3~=Color3.fromRGB(90,60,35) then
+			tween(b,0.2,{BackgroundColor3=Color3.fromRGB(45,45,50)})
+		end
+	end)
+
 	return b
 end
 
@@ -133,9 +247,13 @@ local function switchTab(tab)
 	toolsFrame.Visible=(tab=="Tools")
 	playerFrame.Visible=(tab=="Player")
 	opFrame.Visible=(tab=="Op")
-	toolsBtn.BackgroundColor3=(tab=="Tools") and Color3.fromRGB(80,50,30) or Color3.fromRGB(40,40,40)
-	playerBtn.BackgroundColor3=(tab=="Player") and Color3.fromRGB(80,50,30) or Color3.fromRGB(40,40,40)
-	opBtn.BackgroundColor3=(tab=="Op") and Color3.fromRGB(80,50,30) or Color3.fromRGB(40,40,40)
+
+	local activeColor=Color3.fromRGB(90,60,35)
+	local inactiveColor=Color3.fromRGB(45,45,50)
+
+	tween(toolsBtn,0.2,{BackgroundColor3=(tab=="Tools") and activeColor or inactiveColor})
+	tween(playerBtn,0.2,{BackgroundColor3=(tab=="Player") and activeColor or inactiveColor})
+	tween(opBtn,0.2,{BackgroundColor3=(tab=="Op") and activeColor or inactiveColor})
 end
 toolsBtn.MouseButton1Click:Connect(function() switchTab("Tools") end)
 playerBtn.MouseButton1Click:Connect(function() switchTab("Player") end)
@@ -282,7 +400,7 @@ flyBtn.MouseButton1Click:Connect(function()
 end)
 
 RunService.RenderStepped:Connect(function()
-	if fly and char:FindFirstChild("HumanoidRootPart")then
+	if fly and char:FindFirstChild("HumanoidRootPart") and bv and bg then
 		local root=char.HumanoidRootPart
 		local cam=workspace.CurrentCamera
 		local dir=Vector3.new()
@@ -290,6 +408,8 @@ RunService.RenderStepped:Connect(function()
 		if UIS:IsKeyDown(Enum.KeyCode.S) then dir-=cam.CFrame.LookVector end
 		if UIS:IsKeyDown(Enum.KeyCode.A) then dir-=cam.CFrame.RightVector end
 		if UIS:IsKeyDown(Enum.KeyCode.D) then dir+=cam.CFrame.RightVector end
+		if UIS:IsKeyDown(Enum.KeyCode.Space) then dir+=Vector3.new(0,1,0) end
+		if UIS:IsKeyDown(Enum.KeyCode.LeftShift) then dir-=Vector3.new(0,1,0) end
 		bv.Velocity=dir*speed
 		bg.CFrame=cam.CFrame
 	end
@@ -343,7 +463,7 @@ tpBtn.MouseButton1Click:Connect(function()
 end)
 makeSlider(playerFrame,300,"TP-Walk Speed",1,30,tpSpeed,function(v)tpSpeed=v end)
 
-RunService.RenderStepped:Connect(function()
+RunService.RenderStepped:Connect(function(deltaTime)
 	if tpWalk and char:FindFirstChild("HumanoidRootPart")then
 		local hrp=char.HumanoidRootPart
 		local move=Vector3.new()
@@ -352,60 +472,133 @@ RunService.RenderStepped:Connect(function()
 		if UIS:IsKeyDown(Enum.KeyCode.A) then move-=workspace.CurrentCamera.CFrame.RightVector end
 		if UIS:IsKeyDown(Enum.KeyCode.D) then move+=workspace.CurrentCamera.CFrame.RightVector end
 		if move.Magnitude>0 then
-			hrp.CFrame+=move.Unit*tpSpeed*RunService.RenderStepped:Wait()
+			hrp.CFrame = hrp.CFrame + (move.Unit * tpSpeed * deltaTime)
 		end
 	end
 end)
 
 ------------------------------------------------------
--- Op Tab (Admin)
+-- Op Tab (CheatPanel)
 ------------------------------------------------------
-local grantBtn = Instance.new("TextButton", opFrame)
-grantBtn.Size = UDim2.new(1, -10, 0, 50)
-grantBtn.Position = UDim2.new(0, 5, 0, 20)
-grantBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-grantBtn.TextColor3 = Color3.fromRGB(255, 230, 180)
-grantBtn.Font = Enum.Font.GothamBold
-grantBtn.TextSize = 22
-grantBtn.Text = "Grant Admin Access"
-Instance.new("UICorner", grantBtn).CornerRadius = UDim.new(0, 8)
+local cheatBtn = Instance.new("TextButton", opFrame)
+cheatBtn.Size = UDim2.new(1, -10, 0, 50)
+cheatBtn.Position = UDim2.new(0, 5, 0, 20)
+cheatBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+cheatBtn.TextColor3 = Color3.fromRGB(255, 230, 180)
+cheatBtn.Font = Enum.Font.GothamBold
+cheatBtn.TextSize = 22
+cheatBtn.Text = "Open CheatPanel"
+Instance.new("UICorner", cheatBtn).CornerRadius = UDim.new(0, 8)
 
-grantBtn.MouseButton1Click:Connect(function()
+local hideCheatBtn = Instance.new("TextButton", opFrame)
+hideCheatBtn.Size = UDim2.new(1, -10, 0, 50)
+hideCheatBtn.Position = UDim2.new(0, 5, 0, 80)
+hideCheatBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+hideCheatBtn.TextColor3 = Color3.fromRGB(255, 230, 180)
+hideCheatBtn.Font = Enum.Font.GothamBold
+hideCheatBtn.TextSize = 22
+hideCheatBtn.Text = "Hide CheatPanel"
+Instance.new("UICorner", hideCheatBtn).CornerRadius = UDim.new(0, 8)
+
+cheatBtn.MouseButton1Click:Connect(function()
 	local success, err = pcall(function()
-		local ui = plr.PlayerGui:FindFirstChild("AdminPanelUI") or workspace:FindFirstChild("AdminPanelUI")
-		if not ui then
-			grantBtn.Text = "⚠ No AdminPanelUI found"
+		local StarterGui = game:GetService("StarterGui")
+		local PlayerGui = plr:WaitForChild("PlayerGui")
+
+		print("------- [ GUI SHOW DEBUG START ] -------")
+
+		-- Ищем CheatPanel в StarterGui
+		local template = StarterGui:FindFirstChild("CheatPanel")
+		if not template then
+			warn("⚠ Not found in StarterGui: CheatPanel")
+			cheatBtn.Text = "⚠ CheatPanel not found"
 			task.wait(1.5)
-			grantBtn.Text = "Grant Admin Access"
+			cheatBtn.Text = "Open CheatPanel"
 			return
 		end
 
-		local allowed = ui:FindFirstChild("AllowedUsers")
-		if allowed then
-			for _, v in ipairs(allowed:GetChildren()) do
-				v:Destroy()
+		-- Проверяем, есть ли уже в PlayerGui
+		local existing = PlayerGui:FindFirstChild("CheatPanel")
+
+		if existing then
+			-- Если уже есть, просто включаем
+			existing.Enabled = true
+
+			-- Показываем все GuiObject
+			for _, v in ipairs(existing:GetDescendants()) do
+				if v:IsA("GuiObject") then
+					v.Visible = true
+				end
 			end
-			local val = Instance.new("StringValue", allowed)
-			val.Name = tostring(plr.UserId)
+
+			print("🟢 Enabled: CheatPanel")
+		else
+			-- Клонируем из StarterGui в PlayerGui
+			local clone = template:Clone()
+			clone.Parent = PlayerGui
+			clone.Enabled = true
+
+			-- Показываем все GuiObject
+			for _, v in ipairs(clone:GetDescendants()) do
+				if v:IsA("GuiObject") then
+					v.Visible = true
+				end
+			end
+
+			print("🆕 Cloned & Enabled: CheatPanel")
 		end
 
-		-- ✅ Без VirtualInputManager: просто показываем панель
-		local openFrame = ui:FindFirstChild("AdminFrame")
-		if openFrame and openFrame:IsA("Frame") then
-			openFrame.Visible = true
-		end
+		print("📌 Total target GUIs loaded: 1")
+		print("------- [  GUI SHOW DEBUG END  ] -------\n")
 
-		grantBtn.Text = "✅ Access granted"
-		grantBtn.BackgroundColor3 = Color3.fromRGB(70, 45, 25)
+		cheatBtn.Text = "✅ CheatPanel Opened"
+		cheatBtn.BackgroundColor3 = Color3.fromRGB(70, 45, 25)
 		task.wait(1.5)
-		grantBtn.Text = "Grant Admin Access"
-		grantBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+		cheatBtn.Text = "Open CheatPanel"
+		cheatBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 	end)
 
 	if not success then
-		warn("Admin panel injection failed:", err)
-		grantBtn.Text = "⚠ Error!"
+		warn("CheatPanel loading failed:", err)
+		cheatBtn.Text = "⚠ Error!"
 		task.wait(1.5)
-		grantBtn.Text = "Grant Admin Access"
+		cheatBtn.Text = "Open CheatPanel"
+	end
+end)
+
+hideCheatBtn.MouseButton1Click:Connect(function()
+	local success, err = pcall(function()
+		local PlayerGui = plr:WaitForChild("PlayerGui")
+
+		print("------- [ GUI HIDE DEBUG START ] -------")
+
+		-- Ищем CheatPanel в PlayerGui
+		local cheatPanel = PlayerGui:FindFirstChild("CheatPanel")
+
+		if cheatPanel then
+			-- Скрываем панель
+			cheatPanel.Enabled = false
+
+			print("🙈 Disabled: CheatPanel")
+
+			hideCheatBtn.Text = "✅ CheatPanel Hidden"
+			hideCheatBtn.BackgroundColor3 = Color3.fromRGB(70, 45, 25)
+		else
+			warn("⚠ CheatPanel not found in PlayerGui")
+			hideCheatBtn.Text = "⚠ Not found"
+		end
+
+		print("------- [  GUI HIDE DEBUG END  ] -------\n")
+
+		task.wait(1.5)
+		hideCheatBtn.Text = "Hide CheatPanel"
+		hideCheatBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+	end)
+
+	if not success then
+		warn("CheatPanel hiding failed:", err)
+		hideCheatBtn.Text = "⚠ Error!"
+		task.wait(1.5)
+		hideCheatBtn.Text = "Hide CheatPanel"
 	end
 end)
