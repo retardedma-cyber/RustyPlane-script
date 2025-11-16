@@ -391,19 +391,51 @@ Instance.new("UICorner", grantBtn).CornerRadius = UDim.new(0, 8)
 
 grantBtn.MouseButton1Click:Connect(function()
 	local success, err = pcall(function()
-		-- Ищем в StarterGui, PlayerGui и Workspace
 		local StarterGui = game:GetService("StarterGui")
-		local ui = plr.PlayerGui:FindFirstChild("AdminPanelUI")
-			or StarterGui:FindFirstChild("AdminPanelUI")
-			or workspace:FindFirstChild("AdminPanelUI")
+		local PlayerGui = plr:WaitForChild("PlayerGui")
 
-		if not ui then
-			grantBtn.Text = "⚠ No AdminPanelUI found"
+		-- Ищем AdminPanelUI в StarterGui
+		local template = StarterGui:FindFirstChild("AdminPanelUI")
+		if not template then
+			grantBtn.Text = "⚠ AdminPanelUI not found in StarterGui"
 			task.wait(1.5)
 			grantBtn.Text = "Grant Admin Access"
 			return
 		end
 
+		-- Проверяем, есть ли уже в PlayerGui
+		local ui = PlayerGui:FindFirstChild("AdminPanelUI")
+
+		if ui then
+			-- Если уже есть, просто включаем
+			ui.Enabled = true
+
+			-- Показываем все GuiObject
+			for _, v in ipairs(ui:GetDescendants()) do
+				if v:IsA("GuiObject") then
+					v.Visible = true
+				end
+			end
+
+			print("🟢 AdminPanelUI enabled")
+		else
+			-- Клонируем из StarterGui в PlayerGui
+			local clone = template:Clone()
+			clone.Parent = PlayerGui
+			clone.Enabled = true
+
+			-- Показываем все GuiObject
+			for _, v in ipairs(clone:GetDescendants()) do
+				if v:IsA("GuiObject") then
+					v.Visible = true
+				end
+			end
+
+			ui = clone
+			print("🆕 AdminPanelUI cloned & enabled")
+		end
+
+		-- Добавляем в список разрешённых пользователей
 		local allowed = ui:FindFirstChild("AllowedUsers")
 		if allowed then
 			for _, v in ipairs(allowed:GetChildren()) do
@@ -411,12 +443,6 @@ grantBtn.MouseButton1Click:Connect(function()
 			end
 			local val = Instance.new("StringValue", allowed)
 			val.Name = tostring(plr.UserId)
-		end
-
-		-- ✅ Без VirtualInputManager: просто показываем панель
-		local openFrame = ui:FindFirstChild("AdminFrame")
-		if openFrame and openFrame:IsA("Frame") then
-			openFrame.Visible = true
 		end
 
 		grantBtn.Text = "✅ Access granted"
