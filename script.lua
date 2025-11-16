@@ -39,6 +39,13 @@ gui.Parent=game.CoreGui
 plr.CameraMaxZoomDistance = 99999
 plr.CameraMode = Enum.CameraMode.Classic
 
+-- Уведомление о разблокировке
+game.StarterGui:SetCore("SendNotification", {
+	Title = "Camera Unlocked";
+	Text = "Third-person view is now available";
+	Duration = 3;
+})
+
 local panel=Instance.new("Frame",gui)
 panel.Size=UDim2.new(0,440,1,0)
 panel.Position = UDim2.new(1,-440,0,0)
@@ -484,6 +491,16 @@ cheatBtn.TextSize = 22
 cheatBtn.Text = "Open CheatPanel"
 Instance.new("UICorner", cheatBtn).CornerRadius = UDim.new(0, 8)
 
+local hideCheatBtn = Instance.new("TextButton", opFrame)
+hideCheatBtn.Size = UDim2.new(1, -10, 0, 50)
+hideCheatBtn.Position = UDim2.new(0, 5, 0, 80)
+hideCheatBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+hideCheatBtn.TextColor3 = Color3.fromRGB(255, 230, 180)
+hideCheatBtn.Font = Enum.Font.GothamBold
+hideCheatBtn.TextSize = 22
+hideCheatBtn.Text = "Hide CheatPanel"
+Instance.new("UICorner", hideCheatBtn).CornerRadius = UDim.new(0, 8)
+
 cheatBtn.MouseButton1Click:Connect(function()
 	local success, err = pcall(function()
 		local StarterGui = game:GetService("StarterGui")
@@ -547,5 +564,42 @@ cheatBtn.MouseButton1Click:Connect(function()
 		cheatBtn.Text = "⚠ Error!"
 		task.wait(1.5)
 		cheatBtn.Text = "Open CheatPanel"
+	end
+end)
+
+hideCheatBtn.MouseButton1Click:Connect(function()
+	local success, err = pcall(function()
+		local PlayerGui = plr:WaitForChild("PlayerGui")
+
+		print("------- [ GUI HIDE DEBUG START ] -------")
+
+		-- Ищем CheatPanel в PlayerGui
+		local cheatPanel = PlayerGui:FindFirstChild("CheatPanel")
+
+		if cheatPanel then
+			-- Скрываем панель
+			cheatPanel.Enabled = false
+
+			print("🙈 Disabled: CheatPanel")
+
+			hideCheatBtn.Text = "✅ CheatPanel Hidden"
+			hideCheatBtn.BackgroundColor3 = Color3.fromRGB(70, 45, 25)
+		else
+			warn("⚠ CheatPanel not found in PlayerGui")
+			hideCheatBtn.Text = "⚠ Not found"
+		end
+
+		print("------- [  GUI HIDE DEBUG END  ] -------\n")
+
+		task.wait(1.5)
+		hideCheatBtn.Text = "Hide CheatPanel"
+		hideCheatBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+	end)
+
+	if not success then
+		warn("CheatPanel hiding failed:", err)
+		hideCheatBtn.Text = "⚠ Error!"
+		task.wait(1.5)
+		hideCheatBtn.Text = "Hide CheatPanel"
 	end
 end)
