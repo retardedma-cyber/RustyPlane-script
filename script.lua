@@ -33,6 +33,61 @@ gui.IgnoreGuiInset=true
 gui.ResetOnSpawn=false
 gui.Parent=game.CoreGui
 
+------------------------------------------------------
+-- Разблокировка камеры для работы с меню
+------------------------------------------------------
+local cam = workspace.CurrentCamera
+
+-- Сохраняем оригинальные настройки камеры
+local originalCameraMode = plr.CameraMode
+local originalMinZoom = plr.CameraMinZoomDistance
+local originalMaxZoom = plr.CameraMaxZoomDistance
+
+-- Разблокируем камеру от первого лица
+if plr.CameraMode == Enum.CameraMode.LockFirstPerson then
+	plr.CameraMode = Enum.CameraMode.Classic
+	print("📷 Unlocked first person camera mode")
+end
+
+-- Разблокируем зум
+plr.CameraMinZoomDistance = 0.5
+plr.CameraMaxZoomDistance = 400
+
+-- Плавно отодвигаем камеру в третье лицо если она слишком близко
+task.spawn(function()
+	task.wait(0.1)
+	if char and char:FindFirstChild("HumanoidRootPart") and hum then
+		local hrp = char.HumanoidRootPart
+		local distance = (cam.CFrame.Position - hrp.Position).Magnitude
+
+		-- Если камера слишком близко (первое лицо)
+		if distance < 2 then
+			print("📷 Camera too close, switching to third person view...")
+
+			-- Временно устанавливаем камеру в скриптовый режим
+			cam.CameraType = Enum.CameraType.Scriptable
+
+			-- Плавно отодвигаем камеру
+			local startCF = cam.CFrame
+			local targetCF = hrp.CFrame * CFrame.new(2, 2, 8)
+			local duration = 0.5
+			local elapsed = 0
+
+			while elapsed < duration do
+				elapsed += RunService.RenderStepped:Wait()
+				local alpha = math.min(elapsed / duration, 1)
+				cam.CFrame = startCF:Lerp(targetCF, alpha)
+			end
+
+			-- Возвращаем обычный режим камеры
+			cam.CameraType = Enum.CameraType.Custom
+			cam.CameraSubject = hum
+
+			print("✅ Camera switched to third person")
+		end
+	end
+end)
+
 local panel=Instance.new("Frame",gui)
 panel.Size=UDim2.new(0,440,1,0)
 panel.Position = UDim2.new(1,-440,0,0)
