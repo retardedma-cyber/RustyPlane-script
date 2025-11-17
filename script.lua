@@ -1,10 +1,12 @@
 -- ✈️ Rusty Plane v10 — by RENC
+-- full modern menu: Tools / Player / Op
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 local RS = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
 local plr = Players.LocalPlayer
 local char = plr.Character or plr.CharacterAdded:Wait()
 local hum = char:WaitForChild("Humanoid")
@@ -38,12 +40,17 @@ gui.Parent=game.CoreGui
 plr.CameraMaxZoomDistance = 99999
 plr.CameraMode = Enum.CameraMode.Classic
 
--- Уведомление о разблокировке
-game.StarterGui:SetCore("SendNotification", {
-	Title = "Camera Unlocked";
-	Text = "Third-person view is now available";
-	Duration = 3;
-})
+-- Уведомление о разблокировке (исправлено)
+task.spawn(function()
+	task.wait(0.5)
+	pcall(function()
+		StarterGui:SetCore("SendNotification", {
+			Title = "Camera Unlocked";
+			Text = "Third-person view is now available";
+			Duration = 3;
+		})
+	end)
+end)
 
 local panel=Instance.new("Frame",gui)
 panel.Size=UDim2.new(0,440,1,0)
@@ -153,6 +160,30 @@ minimizeBtn.MouseLeave:Connect(function()
 	tween(minimizeBtn,0.2,{BackgroundColor3=Color3.fromRGB(50,50,55)})
 end)
 
+-- Кнопка восстановления (показывается когда панель минимизирована)
+local restoreBtn = Instance.new("TextButton", gui)
+restoreBtn.Size = UDim2.new(0, 50, 0, 50)
+restoreBtn.Position = UDim2.new(1, -60, 0.5, -25)
+restoreBtn.BackgroundColor3 = Color3.fromRGB(90, 60, 35)
+restoreBtn.Font = Enum.Font.GothamBold
+restoreBtn.Text = "✈"
+restoreBtn.TextSize = 24
+restoreBtn.TextColor3 = Color3.fromRGB(255, 220, 180)
+restoreBtn.Visible = false
+restoreBtn.AutoButtonColor = false
+Instance.new("UICorner", restoreBtn).CornerRadius = UDim.new(0, 12)
+local restoreStroke = Instance.new("UIStroke", restoreBtn)
+restoreStroke.Color = Color3.fromRGB(200, 120, 60)
+restoreStroke.Thickness = 2
+
+-- Hover эффект для кнопки восстановления
+restoreBtn.MouseEnter:Connect(function()
+	tween(restoreBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(120, 80, 45)})
+end)
+restoreBtn.MouseLeave:Connect(function()
+	tween(restoreBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(90, 60, 35)})
+end)
+
 -- Обработчики кнопок
 local panelVisible = true
 closeBtn.MouseButton1Click:Connect(function()
@@ -166,10 +197,20 @@ minimizeBtn.MouseButton1Click:Connect(function()
 	if panelVisible then
 		tween(panel, 0.4, {Position = UDim2.new(1, -440, 0, 0)})
 		minimizeBtn.Text = "–"
+		restoreBtn.Visible = false
 	else
 		tween(panel, 0.4, {Position = UDim2.new(1, 0, 0, 0)})
 		minimizeBtn.Text = "+"
+		task.wait(0.4)
+		restoreBtn.Visible = true
 	end
+end)
+
+restoreBtn.MouseButton1Click:Connect(function()
+	panelVisible = true
+	restoreBtn.Visible = false
+	tween(panel, 0.4, {Position = UDim2.new(1, -440, 0, 0)})
+	minimizeBtn.Text = "–"
 end)
 
 ------------------------------------------------------
@@ -478,7 +519,7 @@ RunService.RenderStepped:Connect(function(deltaTime)
 end)
 
 ------------------------------------------------------
--- Op Tab (CheatPanel)
+-- Op Tab (CheatPanel + End Game)
 ------------------------------------------------------
 local cheatBtn = Instance.new("TextButton", opFrame)
 cheatBtn.Size = UDim2.new(1, -10, 0, 50)
@@ -500,9 +541,19 @@ hideCheatBtn.TextSize = 22
 hideCheatBtn.Text = "Hide CheatPanel"
 Instance.new("UICorner", hideCheatBtn).CornerRadius = UDim.new(0, 8)
 
+-- End Game button (заменяем Fix Fire)
+local endGameBtn = Instance.new("TextButton", opFrame)
+endGameBtn.Size = UDim2.new(1, -10, 0, 50)
+endGameBtn.Position = UDim2.new(0, 5, 0, 140)
+endGameBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+endGameBtn.TextColor3 = Color3.fromRGB(255, 230, 180)
+endGameBtn.Font = Enum.Font.GothamBold
+endGameBtn.TextSize = 22
+endGameBtn.Text = "Set Points [IN LOBBY!]"
+Instance.new("UICorner", endGameBtn).CornerRadius = UDim.new(0, 8)
+
 cheatBtn.MouseButton1Click:Connect(function()
 	local success, err = pcall(function()
-		local StarterGui = game:GetService("StarterGui")
 		local PlayerGui = plr:WaitForChild("PlayerGui")
 
 		print("------- [ GUI SHOW DEBUG START ] -------")
@@ -600,5 +651,71 @@ hideCheatBtn.MouseButton1Click:Connect(function()
 		hideCheatBtn.Text = "⚠ Error!"
 		task.wait(1.5)
 		hideCheatBtn.Text = "Hide CheatPanel"
+	end
+end)
+
+-- End Game functionality
+endGameBtn.MouseButton1Click:Connect(function()
+	local success, err = pcall(function()
+		local PlayerGui = plr:WaitForChild("PlayerGui")
+
+		print("------- [ END GAME DEBUG START ] -------")
+
+		-- Ищем EndCutscene в StarterGui
+		local template = StarterGui:FindFirstChild("SetPointsCheat")
+		if not template then
+			warn("⚠ Not found in StarterGui: EndCutscene")
+			endGameBtn.Text = "⚠ EndCutscene not found"
+			task.wait(1.5)
+			endGameBtn.Text = "Set Points [IN LOBBY!]"
+			return
+		end
+
+		-- Проверяем, есть ли уже в PlayerGui
+		local existing = PlayerGui:FindFirstChild("SetPointsCheat")
+
+		if existing then
+			-- Если уже есть, просто включаем
+			existing.Enabled = true
+
+			-- Показываем все GuiObject
+			for _, v in ipairs(existing:GetDescendants()) do
+				if v:IsA("GuiObject") then
+					v.Visible = true
+				end
+			end
+
+			print("🎬 Enabled: EndCutscene")
+		else
+			-- Клонируем из StarterGui в PlayerGui
+			local clone = template:Clone()
+			clone.Parent = PlayerGui
+			clone.Enabled = true
+
+			-- Показываем все GuiObject
+			for _, v in ipairs(clone:GetDescendants()) do
+				if v:IsA("GuiObject") then
+					v.Visible = true
+				end
+			end
+
+			print("🎬 Cloned & Enabled: SetPointsCheat")
+		end
+
+		print("📌 SetPointsCheat activated")
+		print("------- [  END GAME DEBUG END  ] -------\n")
+
+		endGameBtn.Text = "✅ SetPointsCheat opened"
+		endGameBtn.BackgroundColor3 = Color3.fromRGB(70, 45, 25)
+		task.wait(1.5)
+		endGameBtn.Text = "Set Points [IN LOBBY!]"
+		endGameBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+	end)
+
+	if not success then
+		warn("End Game failed:", err)
+		endGameBtn.Text = "⚠ Error!"
+		task.wait(1.5)
+		endGameBtn.Text = "Set Points [IN LOBBY!]"
 	end
 end)
