@@ -159,6 +159,30 @@ minimizeBtn.MouseLeave:Connect(function()
 	tween(minimizeBtn,0.2,{BackgroundColor3=Color3.fromRGB(50,50,55)})
 end)
 
+-- Кнопка восстановления (показывается когда панель минимизирована)
+local restoreBtn = Instance.new("TextButton", gui)
+restoreBtn.Size = UDim2.new(0, 50, 0, 50)
+restoreBtn.Position = UDim2.new(1, -60, 0.5, -25)
+restoreBtn.BackgroundColor3 = Color3.fromRGB(90, 60, 35)
+restoreBtn.Font = Enum.Font.GothamBold
+restoreBtn.Text = "✈"
+restoreBtn.TextSize = 24
+restoreBtn.TextColor3 = Color3.fromRGB(255, 220, 180)
+restoreBtn.Visible = false
+restoreBtn.AutoButtonColor = false
+Instance.new("UICorner", restoreBtn).CornerRadius = UDim.new(0, 12)
+local restoreStroke = Instance.new("UIStroke", restoreBtn)
+restoreStroke.Color = Color3.fromRGB(200, 120, 60)
+restoreStroke.Thickness = 2
+
+-- Hover эффект для кнопки восстановления
+restoreBtn.MouseEnter:Connect(function()
+	tween(restoreBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(120, 80, 45)})
+end)
+restoreBtn.MouseLeave:Connect(function()
+	tween(restoreBtn, 0.2, {BackgroundColor3 = Color3.fromRGB(90, 60, 35)})
+end)
+
 -- Обработчики кнопок
 local panelVisible = true
 closeBtn.MouseButton1Click:Connect(function()
@@ -172,10 +196,20 @@ minimizeBtn.MouseButton1Click:Connect(function()
 	if panelVisible then
 		tween(panel, 0.4, {Position = UDim2.new(1, -440, 0, 0)})
 		minimizeBtn.Text = "–"
+		restoreBtn.Visible = false
 	else
 		tween(panel, 0.4, {Position = UDim2.new(1, 0, 0, 0)})
 		minimizeBtn.Text = "+"
+		task.wait(0.4)
+		restoreBtn.Visible = true
 	end
+end)
+
+restoreBtn.MouseButton1Click:Connect(function()
+	panelVisible = true
+	restoreBtn.Visible = false
+	tween(panel, 0.4, {Position = UDim2.new(1, -440, 0, 0)})
+	minimizeBtn.Text = "–"
 end)
 
 ------------------------------------------------------
@@ -506,6 +540,16 @@ hideCheatBtn.TextSize = 22
 hideCheatBtn.Text = "Hide CheatPanel"
 Instance.new("UICorner", hideCheatBtn).CornerRadius = UDim.new(0, 8)
 
+local fixFireBtn = Instance.new("TextButton", opFrame)
+fixFireBtn.Size = UDim2.new(1, -10, 0, 50)
+fixFireBtn.Position = UDim2.new(0, 5, 0, 140)
+fixFireBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+fixFireBtn.TextColor3 = Color3.fromRGB(255, 230, 180)
+fixFireBtn.Font = Enum.Font.GothamBold
+fixFireBtn.TextSize = 22
+fixFireBtn.Text = "Fix Fire"
+Instance.new("UICorner", fixFireBtn).CornerRadius = UDim.new(0, 8)
+
 cheatBtn.MouseButton1Click:Connect(function()
 	local success, err = pcall(function()
 		local StarterGui = game:GetService("StarterGui")
@@ -606,5 +650,48 @@ hideCheatBtn.MouseButton1Click:Connect(function()
 		hideCheatBtn.Text = "⚠ Error!"
 		task.wait(1.5)
 		hideCheatBtn.Text = "Hide CheatPanel"
+	end
+end)
+
+fixFireBtn.MouseButton1Click:Connect(function()
+	local success, err = pcall(function()
+		-- Ищем FixFire в ReplicatedStorage
+		local fixFire = RS:FindFirstChild("FixFire")
+
+		if not fixFire then
+			warn("⚠ FixFire not found in ReplicatedStorage")
+			fixFireBtn.Text = "⚠ Not found"
+			task.wait(1.5)
+			fixFireBtn.Text = "Fix Fire"
+			return
+		end
+
+		-- Вызываем FixFire (RemoteEvent или RemoteFunction)
+		if fixFire:IsA("RemoteEvent") then
+			fixFire:FireServer()
+			print("🔥 FixFire RemoteEvent fired")
+		elseif fixFire:IsA("RemoteFunction") then
+			fixFire:InvokeServer()
+			print("🔥 FixFire RemoteFunction invoked")
+		else
+			warn("⚠ FixFire is not a RemoteEvent or RemoteFunction")
+			fixFireBtn.Text = "⚠ Wrong type"
+			task.wait(1.5)
+			fixFireBtn.Text = "Fix Fire"
+			return
+		end
+
+		fixFireBtn.Text = "✅ Fire Fixed"
+		fixFireBtn.BackgroundColor3 = Color3.fromRGB(70, 45, 25)
+		task.wait(1.5)
+		fixFireBtn.Text = "Fix Fire"
+		fixFireBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+	end)
+
+	if not success then
+		warn("Fix Fire failed:", err)
+		fixFireBtn.Text = "⚠ Error!"
+		task.wait(1.5)
+		fixFireBtn.Text = "Fix Fire"
 	end
 end)
