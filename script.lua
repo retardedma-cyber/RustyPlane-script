@@ -6,6 +6,7 @@ local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local UIS = game:GetService("UserInputService")
 local RS = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
 local plr = Players.LocalPlayer
 local char = plr.Character or plr.CharacterAdded:Wait()
 local hum = char:WaitForChild("Humanoid")
@@ -39,11 +40,11 @@ gui.Parent=game.CoreGui
 plr.CameraMaxZoomDistance = 99999
 plr.CameraMode = Enum.CameraMode.Classic
 
--- Уведомление о разблокировке
+-- Уведомление о разблокировке (исправлено)
 task.spawn(function()
 	task.wait(0.5)
 	pcall(function()
-		game.StarterGui:SetCore("SendNotification", {
+		StarterGui:SetCore("SendNotification", {
 			Title = "Camera Unlocked";
 			Text = "Third-person view is now available";
 			Duration = 3;
@@ -518,7 +519,7 @@ RunService.RenderStepped:Connect(function(deltaTime)
 end)
 
 ------------------------------------------------------
--- Op Tab (CheatPanel)
+-- Op Tab (CheatPanel + End Game)
 ------------------------------------------------------
 local cheatBtn = Instance.new("TextButton", opFrame)
 cheatBtn.Size = UDim2.new(1, -10, 0, 50)
@@ -540,19 +541,19 @@ hideCheatBtn.TextSize = 22
 hideCheatBtn.Text = "Hide CheatPanel"
 Instance.new("UICorner", hideCheatBtn).CornerRadius = UDim.new(0, 8)
 
-local fixFireBtn = Instance.new("TextButton", opFrame)
-fixFireBtn.Size = UDim2.new(1, -10, 0, 50)
-fixFireBtn.Position = UDim2.new(0, 5, 0, 140)
-fixFireBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-fixFireBtn.TextColor3 = Color3.fromRGB(255, 230, 180)
-fixFireBtn.Font = Enum.Font.GothamBold
-fixFireBtn.TextSize = 22
-fixFireBtn.Text = "Fix Fire"
-Instance.new("UICorner", fixFireBtn).CornerRadius = UDim.new(0, 8)
+-- End Game button (заменяем Fix Fire)
+local endGameBtn = Instance.new("TextButton", opFrame)
+endGameBtn.Size = UDim2.new(1, -10, 0, 50)
+endGameBtn.Position = UDim2.new(0, 5, 0, 140)
+endGameBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+endGameBtn.TextColor3 = Color3.fromRGB(255, 230, 180)
+endGameBtn.Font = Enum.Font.GothamBold
+endGameBtn.TextSize = 22
+endGameBtn.Text = "Set Points [IN LOBBY!]"
+Instance.new("UICorner", endGameBtn).CornerRadius = UDim.new(0, 8)
 
 cheatBtn.MouseButton1Click:Connect(function()
 	local success, err = pcall(function()
-		local StarterGui = game:GetService("StarterGui")
 		local PlayerGui = plr:WaitForChild("PlayerGui")
 
 		print("------- [ GUI SHOW DEBUG START ] -------")
@@ -653,45 +654,68 @@ hideCheatBtn.MouseButton1Click:Connect(function()
 	end
 end)
 
-fixFireBtn.MouseButton1Click:Connect(function()
+-- End Game functionality
+endGameBtn.MouseButton1Click:Connect(function()
 	local success, err = pcall(function()
-		-- Ищем FixFire в ReplicatedStorage
-		local fixFire = RS:FindFirstChild("FixFire")
+		local PlayerGui = plr:WaitForChild("PlayerGui")
 
-		if not fixFire then
-			warn("⚠ FixFire not found in ReplicatedStorage")
-			fixFireBtn.Text = "⚠ Not found"
+		print("------- [ END GAME DEBUG START ] -------")
+
+		-- Ищем EndCutscene в StarterGui
+		local template = StarterGui:FindFirstChild("SetPointsCheat")
+		if not template then
+			warn("⚠ Not found in StarterGui: EndCutscene")
+			endGameBtn.Text = "⚠ EndCutscene not found"
 			task.wait(1.5)
-			fixFireBtn.Text = "Fix Fire"
+			endGameBtn.Text = "Set Points [IN LOBBY!]"
 			return
 		end
 
-		-- Вызываем FixFire (RemoteEvent или RemoteFunction)
-		if fixFire:IsA("RemoteEvent") then
-			fixFire:FireServer()
-			print("🔥 FixFire RemoteEvent fired")
-		elseif fixFire:IsA("RemoteFunction") then
-			fixFire:InvokeServer()
-			print("🔥 FixFire RemoteFunction invoked")
+		-- Проверяем, есть ли уже в PlayerGui
+		local existing = PlayerGui:FindFirstChild("SetPointsCheat")
+
+		if existing then
+			-- Если уже есть, просто включаем
+			existing.Enabled = true
+
+			-- Показываем все GuiObject
+			for _, v in ipairs(existing:GetDescendants()) do
+				if v:IsA("GuiObject") then
+					v.Visible = true
+				end
+			end
+
+			print("🎬 Enabled: EndCutscene")
 		else
-			warn("⚠ FixFire is not a RemoteEvent or RemoteFunction")
-			fixFireBtn.Text = "⚠ Wrong type"
-			task.wait(1.5)
-			fixFireBtn.Text = "Fix Fire"
-			return
+			-- Клонируем из StarterGui в PlayerGui
+			local clone = template:Clone()
+			clone.Parent = PlayerGui
+			clone.Enabled = true
+
+			-- Показываем все GuiObject
+			for _, v in ipairs(clone:GetDescendants()) do
+				if v:IsA("GuiObject") then
+					v.Visible = true
+				end
+			end
+
+			print("🎬 Cloned & Enabled: SetPointsCheat")
 		end
 
-		fixFireBtn.Text = "✅ Fire Fixed"
-		fixFireBtn.BackgroundColor3 = Color3.fromRGB(70, 45, 25)
+		print("📌 SetPointsCheat activated")
+		print("------- [  END GAME DEBUG END  ] -------\n")
+
+		endGameBtn.Text = "✅ SetPointsCheat opened"
+		endGameBtn.BackgroundColor3 = Color3.fromRGB(70, 45, 25)
 		task.wait(1.5)
-		fixFireBtn.Text = "Fix Fire"
-		fixFireBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+		endGameBtn.Text = "Set Points [IN LOBBY!]"
+		endGameBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 	end)
 
 	if not success then
-		warn("Fix Fire failed:", err)
-		fixFireBtn.Text = "⚠ Error!"
+		warn("End Game failed:", err)
+		endGameBtn.Text = "⚠ Error!"
 		task.wait(1.5)
-		fixFireBtn.Text = "Fix Fire"
+		endGameBtn.Text = "Set Points [IN LOBBY!]"
 	end
 end)
